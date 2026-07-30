@@ -57,7 +57,7 @@ This document captures the SQL schema design for the Task Management Tool, along
 | DueDate | DATETIME2, NULL | |
 | StatusId | INT, FK → TaskStatuses.Id, NOT NULL | |
 | PriorityId | INT, FK → TaskPriorities.Id, NOT NULL | |
-| CategoryId | INT, FK → Categories.Id, NULL | nullable — task may be uncategorized |
+| CategoryId | INT, FK → Categories.Id, NOT NULL | mandatory — dropdown includes an "Other" option so a category is always selectable |
 | CreatedByUserId | INT, FK → Users.Id, NOT NULL | who originally created the task |
 | AssignedToUserId | INT, FK → Users.Id, NOT NULL | who the task is assigned to |
 | IsDeleted | BIT, NOT NULL, default 0 | soft delete flag |
@@ -75,7 +75,7 @@ This document captures the SQL schema design for the Task Management Tool, along
 | Users → Tasks (as assignee) | One-to-many via `AssignedToUserId` |
 | TaskStatuses → Tasks | One-to-many |
 | TaskPriorities → Tasks | One-to-many |
-| Categories → Tasks | One-to-many (nullable) |
+| Categories → Tasks | One-to-many (mandatory — every task has a category, "Other" covers the fallback case) |
 
 ---
 
@@ -110,7 +110,7 @@ This document captures the SQL schema design for the Task Management Tool, along
 │     DueDate                        │
 │  FK StatusId    ──► TaskStatuses.Id
 │  FK PriorityId  ──► TaskPriorities.Id
-│  FK CategoryId  ──► Categories.Id (nullable)
+│  FK CategoryId  ──► Categories.Id (mandatory)
 │  FK CreatedByUserId  ──► Users.Id
 │  FK AssignedToUserId ──► Users.Id
 │     IsDeleted
@@ -140,6 +140,8 @@ This document captures the SQL schema design for the Task Management Tool, along
 
 4. **Categories are global**, not per-user — admin-managed, keeps the initial build simpler. Per-user custom categories was considered and deferred.
 
+5. **Category is mandatory on every task** (`CategoryId` is `NOT NULL`) — consistent with `StatusId` and `PriorityId`, which are also required. Rather than making the column nullable to handle tasks that don't fit a specific category, the `Categories` seed data includes an **"Other"** entry, so the New Task form's category dropdown always has a valid, selectable option and the database never needs to handle a null category as a special case.
+
 5. **Soft delete via `IsDeleted` flag** — tasks are never hard-deleted from the database; preserves audit history and allows recovery. All queries in the Application layer will need to filter `WHERE IsDeleted = 0`.
 
 6. **Password security** — `PasswordHash` column only; plain text passwords are never stored. Hashing will be implemented in the Application/Infrastructure layer in a later phase.
@@ -154,5 +156,5 @@ This document captures the SQL schema design for the Task Management Tool, along
 
 - Fluent API configuration for the dual `Users` foreign keys on `Tasks`
 - Migration generation and `DbContext` setup
-- Seed data for `Roles`, `TaskStatuses`, `TaskPriorities` (fixed lookup values)
+- Seed data for `Roles`, `TaskStatuses`, `TaskPriorities`, `Categories` (fixed lookup values, `Categories` must include an "Other" entry)
 - Index planning (e.g., `Email` unique index, `AssignedToUserId` index for dashboard queries)
