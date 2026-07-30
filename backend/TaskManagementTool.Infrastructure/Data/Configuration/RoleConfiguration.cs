@@ -18,5 +18,10 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
 
         builder.HasIndex(r => r.Name)
             .IsUnique();
+
+        builder.HasData( 
+            new Role { Id = 1, Name = "Admin" },
+            new Role { Id = 2, Name = "User" }
+        );
     }
 }

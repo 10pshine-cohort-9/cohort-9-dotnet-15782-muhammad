@@ -18,5 +18,12 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.HasIndex(c => c.Name)
             .IsUnique();
+
+        builder.HasData(
+            new Category { Id = 1, Name = "Work" },
+            new Category { Id = 2, Name = "Personal" },
+            new Category { Id = 3, Name = "Urgent" },
+            new Category { Id = 4, Name = "Other" }
+         );
     }
 }

@@ -38,7 +38,7 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
             .HasForeignKey(t => t.PriorityId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Category - optional (nullable FK)
+        // Category - required
         builder.HasOne(t => t.Category)
             .WithMany(c => c.Tasks)
             .HasForeignKey(t => t.CategoryId)

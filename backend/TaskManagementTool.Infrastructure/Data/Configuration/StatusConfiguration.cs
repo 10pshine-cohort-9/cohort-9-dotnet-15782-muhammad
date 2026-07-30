@@ -18,5 +18,11 @@ public class StatusConfiguration : IEntityTypeConfiguration<Status>
 
         builder.HasIndex(s => s.Name)
             .IsUnique();
+
+        builder.HasData(
+            new Status { Id = 1, Name = "To Do" },
+            new Status { Id = 2, Name = "In Progress" },
+            new Status { Id = 3, Name = "Completed" }
+         );
     }
 }

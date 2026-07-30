@@ -18,5 +18,11 @@ public class PriorityConfiguration : IEntityTypeConfiguration<Priority>
 
         builder.HasIndex(p => p.Name)
             .IsUnique();
+
+        builder.HasData(
+            new Priority { Id = 1, Name = "Low" },
+            new Priority { Id = 2, Name = "Medium" },
+            new Priority { Id = 3, Name = "High" }
+         );
     }
 }
