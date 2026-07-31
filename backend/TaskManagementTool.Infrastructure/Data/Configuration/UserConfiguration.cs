@@ -36,5 +36,26 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithMany(r => r.Users)
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(
+            new User
+            {
+                Id = 1,
+                FullName = "Admin",
+                Email = "admin101@taskmanagertool.com",
+                PasswordHash = "$2a$11$CIX09ywHumg69tSqjEeZne4vicwPZiz7/hr00vmEbusIIX0DULMQS",
+                RoleId = 1,
+                CreatedAt = new DateTime(2026, 7, 31, 0, 0, 0, DateTimeKind.Utc)
+            },
+                new User
+                {
+                    Id = 2,
+                    FullName = "Ali Ahmed",
+                    Email = "aliahmed45@gmail.com",
+                    PasswordHash = "$2a$11$ZuCYGlZy6MsD4Uv9oy18deNV97muiXhMEa6QGtheMyRPjsS75nI8C",
+                    RoleId = 2,
+                    CreatedAt = new DateTime(2026, 7, 31, 0, 0, 0, DateTimeKind.Utc)
+                }
+        );
     }
 }
