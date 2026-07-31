@@ -26,6 +26,9 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
             .IsRequired()
             .HasDefaultValueSql("GETUTCDATE()");
 
+        builder.Property(t => t.CategoryId)
+            .HasDefaultValue(4); // Default to "other" category
+
         // Status - required
         builder.HasOne(t => t.Status)
             .WithMany(s => s.Tasks)
