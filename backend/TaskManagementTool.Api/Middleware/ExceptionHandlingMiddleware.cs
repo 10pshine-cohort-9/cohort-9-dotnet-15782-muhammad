@@ -32,6 +32,12 @@ public class ExceptionHandlingMiddleware
             "Unhandled exception occurred. Path: {Path}, Method: {Method}",
             context.Request.Path, context.Request.Method);
 
+        if (context.Response.HasStarted)
+        {
+            // If the response has already started, we can't modify it
+            throw exception;
+        }
+
         var (statusCode, message) = MapException(exception);
 
         context.Response.ContentType = "application/json";

@@ -53,6 +53,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "TaskManagementTool API terminated unexpectedly during startup");
+    throw; // Re-throw the exception to ensure the process exits with a non-zero exit code
 }
 finally
 {
