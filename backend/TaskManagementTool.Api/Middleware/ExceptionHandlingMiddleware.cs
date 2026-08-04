@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using TaskManagementTool.Application.Exceptions;
 
 namespace TaskManagementTool.Api.Middleware;
 
@@ -28,17 +29,26 @@ public class ExceptionHandlingMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(exception,
-            "Unhandled exception occurred. Path: {Path}, Method: {Method}",
-            context.Request.Path, context.Request.Method);
+        var (statusCode, message) = MapException(exception);
+
+        if (statusCode >= 500)
+        {
+            _logger.LogError(exception,
+                "Unhandled exception occurred. Path: {Path}, Method: {Method}",
+                context.Request.Path, context.Request.Method);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Handled exception: {ExceptionType}. Path: {Path}, Method: {Method}, Message: {Message}",
+                exception.GetType().Name, context.Request.Path, context.Request.Method, message);
+        }
 
         if (context.Response.HasStarted)
         {
             // If the response has already started, we can't modify it
             throw exception;
         }
-
-        var (statusCode, message) = MapException(exception);
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = statusCode;
@@ -56,10 +66,11 @@ public class ExceptionHandlingMiddleware
 
     private static (int StatusCode, string Message) MapException(Exception exception)
     {
-        // Extend this switch in later phases as custom exceptions are introduced
-        // e.g. NotFoundException -> 404, ValidationException -> 400, UnauthorizedAccessException -> 401
+        // Extend this switch in later phases as new custom exceptions are introduced
         return exception switch
         {
+            DuplicateEmailException => ((int)HttpStatusCode.Conflict, exception.Message),
+            InvalidCredentialsException => ((int)HttpStatusCode.Unauthorized, exception.Message),
             _ => ((int)HttpStatusCode.InternalServerError, "An unexpected error occurred. Please try again later.")
         };
     }
