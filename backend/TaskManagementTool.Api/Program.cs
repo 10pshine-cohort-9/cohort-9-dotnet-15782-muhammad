@@ -1,9 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using TaskManagementTool.Api.Middleware;
+using TaskManagementTool.Application.Interfaces;
+using TaskManagementTool.Application.Settings;
 using TaskManagementTool.Infrastructure.Data;
 using TaskManagementTool.Infrastructure.Logging;
-using TaskManagementTool.Application.Settings;
+using TaskManagementTool.Infrastructure.Services;
 
 // Bootstrap logger — catches startup errors before the host is fully built
 Log.Logger = new LoggerConfiguration()
@@ -33,13 +38,43 @@ try
 
     builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
-    var app = builder.Build();
+    builder.Services.AddScoped<IAuthService, AuthService>();
 
-    // Global exception handling — must be first so it wraps everything below it
-    app.UseMiddleware<ExceptionHandlingMiddleware>();
+    var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
+    ?? throw new InvalidOperationException("Jwt configuration section is missing.");
+
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+    builder.Services.AddAuthorization();
+
+    var app = builder.Build();
 
     // Serilog's built-in request logging — logs every HTTP request (method, path, status, duration)
     app.UseSerilogRequestLogging();
+
+    // Global exception handling — must be first so it wraps everything below it
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
@@ -48,6 +83,7 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
 
