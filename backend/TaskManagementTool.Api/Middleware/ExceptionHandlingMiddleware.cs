@@ -66,10 +66,10 @@ public class ExceptionHandlingMiddleware
 
     private static (int StatusCode, string Message) MapException(Exception exception)
     {
-        // Extend this switch in later phases as new custom exceptions are introduced
         return exception switch
         {
             DuplicateEmailException => ((int)HttpStatusCode.Conflict, exception.Message),
+            WeakPasswordException => ((int)HttpStatusCode.BadRequest, exception.Message),
             InvalidCredentialsException => ((int)HttpStatusCode.Unauthorized, exception.Message),
             _ => ((int)HttpStatusCode.InternalServerError, "An unexpected error occurred. Please try again later.")
         };

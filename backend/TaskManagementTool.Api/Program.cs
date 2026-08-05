@@ -3,6 +3,7 @@ using Serilog;
 using TaskManagementTool.Api.Middleware;
 using TaskManagementTool.Infrastructure.Data;
 using TaskManagementTool.Infrastructure.Logging;
+using TaskManagementTool.Application.Settings;
 
 // Bootstrap logger — catches startup errors before the host is fully built
 Log.Logger = new LoggerConfiguration()
@@ -29,6 +30,8 @@ try
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found. Check User Secrets or appsettings configuration.");
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlServer(connectionString));
+
+    builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
     var app = builder.Build();
 
