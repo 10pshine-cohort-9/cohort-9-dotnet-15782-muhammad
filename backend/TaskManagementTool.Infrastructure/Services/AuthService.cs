@@ -24,12 +24,17 @@ public class AuthService : IAuthService
 
     public AuthService(AppDbContext context, IOptions<JwtSettings> jwtSettings)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(jwtSettings);
+
         _context = context;
         _jwtSettings = jwtSettings.Value;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var emailExists = await _context.Users
             .AnyAsync(u => u.Email == request.Email);
 
@@ -63,13 +68,20 @@ public class AuthService : IAuthService
         return GenerateAuthResponse(savedUser);
     }
 
+    private const string DummyPasswordHash =
+    "$2a$11$CIX09ywHumg69tSqjEeZne4vicwPZiz7/hr00vmEbusIIX0DULMQS";
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var user = await _context.Users
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-        if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        var hashToVerify = user?.PasswordHash ?? DummyPasswordHash;
+        var passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, hashToVerify);
+
+        if (user is null || !passwordValid)
         {
             throw new InvalidCredentialsException();
         }

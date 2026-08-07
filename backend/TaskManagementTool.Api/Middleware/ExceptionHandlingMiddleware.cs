@@ -37,6 +37,12 @@ public class ExceptionHandlingMiddleware
                 "Unhandled exception occurred. Path: {Path}, Method: {Method}",
                 context.Request.Path, context.Request.Method);
         }
+        else if (exception is DuplicateEmailException)
+        {
+            _logger.LogWarning(
+                "Handled exception: {ExceptionType}. Path: {Path}, Method: {Method}",
+                exception.GetType().Name, context.Request.Path, context.Request.Method);
+        }
         else
         {
             _logger.LogWarning(
