@@ -11,17 +11,17 @@ public class TaskItem
     public DateTime? UpdatedAt { get; set; }
 
     public int StatusId { get; set; }
-    public Status Status { get; set; } = null!;
+    public Status? Status { get; set; }
 
     public int PriorityId { get; set; }
-    public Priority Priority { get; set; } = null!;
+    public Priority? Priority { get; set; }
 
     public int CategoryId { get; set; }
-    public Category Category { get; set; } = null!;
+    public Category? Category { get; set; }
 
     public int CreatedByUserId { get; set; }
-    public User CreatedByUser { get; set; } = null!;
+    public User? CreatedByUser { get; set; }
 
     public int AssignedToUserId { get; set; }
-    public User AssignedToUser { get; set; } = null!;
+    public User? AssignedToUser { get; set; }
 }
