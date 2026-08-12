@@ -316,6 +316,16 @@ public class TaskServiceTests
         Assert.True(result.IsAssignedByAdmin);
     }
 
+    [Fact]
+    public async Task CreateAsync_AdminAssignsToSelf_ThrowsInvalidTaskReferenceException()
+    {
+        var context = CreateInMemoryContext();
+        var service = CreateTaskService(context);
+        var request = new CreateTaskRequest { Title = "Task", PriorityId = PriorityLowId, AssignedToUserId = AdminId };
+
+        await Assert.ThrowsAsync<InvalidTaskReferenceException>(() => service.CreateAsync(request, AdminId, AdminRole));
+    }
+
     #endregion
 
     #region Update - Partial Update Behavior
