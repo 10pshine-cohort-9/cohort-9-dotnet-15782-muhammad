@@ -39,6 +39,7 @@ try
     builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
     builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<ITaskService, TaskService>();
 
     var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
     ?? throw new InvalidOperationException("Jwt configuration section is missing.");

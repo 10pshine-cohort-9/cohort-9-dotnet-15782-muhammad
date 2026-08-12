@@ -77,6 +77,10 @@ public class ExceptionHandlingMiddleware
             DuplicateEmailException => ((int)HttpStatusCode.Conflict, exception.Message),
             WeakPasswordException => ((int)HttpStatusCode.BadRequest, exception.Message),
             InvalidCredentialsException => ((int)HttpStatusCode.Unauthorized, exception.Message),
+            TaskNotFoundException => ((int)HttpStatusCode.NotFound, exception.Message),
+            UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, exception.Message),
+            TaskAccessDeniedException => ((int)HttpStatusCode.Forbidden, exception.Message),
+            InvalidTaskReferenceException => ((int)HttpStatusCode.BadRequest, exception.Message),
             _ => ((int)HttpStatusCode.InternalServerError, "An unexpected error occurred. Please try again later.")
         };
     }
