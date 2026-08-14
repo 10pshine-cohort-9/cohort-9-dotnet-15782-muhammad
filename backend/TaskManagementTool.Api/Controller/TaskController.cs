@@ -15,6 +15,7 @@ public class TasksController : ControllerBase
 
     public TasksController(ITaskService taskService)
     {
+        ArgumentNullException.ThrowIfNull(taskService);
         _taskService = taskService;
     }
 

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TaskManagementTool.Application.DTOs.Auth;
 
-public class LoginRequest
+public class LoginRequest : IValidatableObject
 {
     [Required]
     [EmailAddress]

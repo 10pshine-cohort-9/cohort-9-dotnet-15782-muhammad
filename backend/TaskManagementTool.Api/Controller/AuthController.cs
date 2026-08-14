@@ -39,6 +39,11 @@ public class AuthController : ControllerBase
         var email = User.FindFirstValue(ClaimTypes.Email);
         var role = User.FindFirstValue(ClaimTypes.Role);
 
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(role))
+        {
+            return Forbid();
+        }
+
         return Ok(new
         {
             userId,

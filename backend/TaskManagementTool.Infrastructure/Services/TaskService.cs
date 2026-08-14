@@ -67,6 +67,14 @@ public class TaskService : ITaskService
             throw new TaskAccessDeniedException();
         }
 
+        if (currentUserRole == AdminRole && assignedToUserId == currentUserId)
+        {
+            _logger.LogWarning(
+                "Admin {UserId} attempted to self-assign a task, which is not permitted.",
+                currentUserId);
+            throw new InvalidTaskReferenceException("Admins cannot assign tasks to themselves.");
+        }
+
         var assignedToUser = await _context.Users.FindAsync(assignedToUserId)
             ?? throw new InvalidTaskReferenceException($"AssignedToUserId '{assignedToUserId}' does not exist.");
 
@@ -181,6 +189,14 @@ public class TaskService : ITaskService
                     "User {UserId} attempted to reassign task {TaskId} to another user {TargetUserId}.",
                     currentUserId, taskId, request.AssignedToUserId.Value);
                 throw new TaskAccessDeniedException();
+            }
+
+            if (currentUserRole == AdminRole && request.AssignedToUserId.Value == currentUserId)
+            {
+                _logger.LogWarning(
+                    "Admin {UserId} attempted to self-assign task {TaskId}, which is not permitted.",
+                    currentUserId, taskId);
+                throw new InvalidTaskReferenceException("Admins cannot assign tasks to themselves.");
             }
 
             _ = await _context.Users.FindAsync(request.AssignedToUserId.Value)
