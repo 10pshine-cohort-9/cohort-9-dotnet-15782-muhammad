@@ -13,6 +13,7 @@ public class TaskService : ITaskService
     private const string AdminRole = "Admin";
     private const string DefaultStatusName = "To Do";
     private const string DefaultCategoryName = "Other";
+    private const string PersonalCategoryName = "Personal";
 
     private readonly AppDbContext _context;
     private readonly ILogger<TaskService> _logger;
@@ -75,6 +76,11 @@ public class TaskService : ITaskService
             throw new InvalidTaskReferenceException("Admins cannot assign tasks to themselves.");
         }
 
+        if (currentUserRole == AdminRole && assignedToUserId != currentUserId && category.Name == PersonalCategoryName)
+        {
+            throw new InvalidTaskReferenceException("Admins cannot assign 'Personal' category tasks to other users.");
+        }
+
         var assignedToUser = await _context.Users.FindAsync(assignedToUserId)
             ?? throw new InvalidTaskReferenceException($"AssignedToUserId '{assignedToUserId}' does not exist.");
 
@@ -118,8 +124,12 @@ public class TaskService : ITaskService
         {
             query = query.Where(t => t.CreatedByUserId == currentUserId || t.AssignedToUserId == currentUserId);
         }
+        else
+        {
+            query = query.Where(t => t.Category.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId);
+        }
 
-        if(!string.IsNullOrWhiteSpace(searchTitle))
+        if (!string.IsNullOrWhiteSpace(searchTitle))
         {
             query = query.Where(t => t.Title.Contains(searchTitle));
         }
@@ -204,6 +214,19 @@ public class TaskService : ITaskService
             task.AssignedToUserId = request.AssignedToUserId.Value;
         }
 
+        if (currentUserRole == AdminRole && task.AssignedToUserId != currentUserId)
+        {
+            var categoryName = await _context.Categories
+                .Where(c => c.Id == task.CategoryId)
+                .Select(c => c.Name)
+                .FirstAsync();
+
+            if (categoryName == PersonalCategoryName)
+            {
+                throw new InvalidTaskReferenceException("Admins cannot assign 'Personal' category tasks to other users.");
+            }
+        }
+
         task.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
@@ -252,6 +275,14 @@ public class TaskService : ITaskService
         {
             _logger.LogWarning(
                 "User {UserId} attempted unauthorized access to task {TaskId}.",
+                currentUserId, taskId);
+            throw new TaskAccessDeniedException();
+        }
+
+        if (currentUserRole == AdminRole && task.Category.Name == PersonalCategoryName && task.CreatedByUserId != currentUserId)
+        {
+            _logger.LogWarning(
+                "Admin {UserId} attempted to access another user's Personal task {TaskId}.",
                 currentUserId, taskId);
             throw new TaskAccessDeniedException();
         }
