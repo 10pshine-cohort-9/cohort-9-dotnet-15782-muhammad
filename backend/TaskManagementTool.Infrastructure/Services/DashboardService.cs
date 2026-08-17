@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TaskManagementTool.Application.DTOs.Dashboard;
 using TaskManagementTool.Application.Interfaces;
+using TaskManagementTool.Application.Exceptions;
 using TaskManagementTool.Infrastructure.Data;
 
 namespace TaskManagementTool.Infrastructure.Services;
@@ -63,5 +64,27 @@ public class DashboardService : IDashboardService
             currentUserId, currentUserRole, response.TotalTasks, response.ToDoCount, response.InProgressCount, response.CompletedCount);
 
         return response;
+    }
+
+    public async Task<List<UserSummaryResponse>> GetUserSummariesAsync(int currentUserId, string currentUserRole)
+    {
+        if (currentUserRole != AdminRole)
+        {
+            _logger.LogWarning("User {UserId} attempted to access the admin user summary endpoint.", currentUserId);
+            throw new TaskAccessDeniedException();
+        }
+
+        return await _context.Users
+            .Select(u => new UserSummaryResponse
+            {
+                UserId = u.Id,
+                FullName = u.FullName,
+                Email = u.Email,
+                TaskCount = _context.Tasks.Count(t =>
+                    t.AssignedToUserId == u.Id &&
+                    !t.IsDeleted &&
+                    (t.Category.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId))
+            })
+            .ToListAsync();
     }
 }

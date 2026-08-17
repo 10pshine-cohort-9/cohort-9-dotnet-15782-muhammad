@@ -110,7 +110,7 @@ public class TaskService : ITaskService
     public async Task<TaskResponse> GetByIdAsync(int taskId, int currentUserId, string currentUserRole)
         => await GetByIdInternalAsync(taskId, currentUserId, currentUserRole);
 
-    public async Task<List<TaskResponse>> GetAllAsync(int currentUserId, string currentUserRole, string? searchTitle = null)
+    public async Task<List<TaskResponse>> GetAllAsync(int currentUserId, string currentUserRole, string? searchTitle = null, int? targetUserId = null)
     {
         var query = _context.Tasks
             .Include(t => t.Status)
@@ -120,6 +120,11 @@ public class TaskService : ITaskService
             .Include(t => t.AssignedToUser)
             .Where(t => !t.IsDeleted);
 
+        if (targetUserId is not null && currentUserRole != AdminRole)
+        {
+            throw new TaskAccessDeniedException();
+        }
+
         if (currentUserRole != AdminRole)
         {
             query = query.Where(t => t.CreatedByUserId == currentUserId || t.AssignedToUserId == currentUserId);
@@ -127,6 +132,11 @@ public class TaskService : ITaskService
         else
         {
             query = query.Where(t => t.Category.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId);
+
+            if (targetUserId is not null)
+            {
+                query = query.Where(t => t.AssignedToUserId == targetUserId.Value);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(searchTitle))

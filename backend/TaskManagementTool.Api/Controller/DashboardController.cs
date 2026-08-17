@@ -27,6 +27,14 @@ public class DashboardController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("users")]
+    public async Task<ActionResult<List<UserSummaryResponse>>> GetUserSummaries()
+    {
+        var (userId, role) = GetCurrentUser();
+        var result = await _dashboardService.GetUserSummariesAsync(userId, role);
+        return Ok(result);
+    }
+
     private (int UserId, string Role) GetCurrentUser()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
