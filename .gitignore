@@ -1,0 +1,32 @@
+## .NET ##
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## Build results ##
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+## Visual Studio ##
+*.userosscache
+*.sln.docstates
+*.dbmdl
+
+## Node / React (frontend) ##
+node_modules/
+dist/
+build/
+.env
+.env.local
+
+## Logs ##
+*.log
+Logs/
+
+## OS files ##
+.DS_Store
+Thumbs.db
