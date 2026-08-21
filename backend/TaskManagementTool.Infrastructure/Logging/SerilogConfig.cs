@@ -13,7 +13,7 @@ public static class SerilogConfig
             .ReadFrom.Configuration(configuration)
             .Enrich.FromLogContext()
             .WriteTo.Console(
-                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.File(
                 path: "../Logs/log-.txt",
                 rollingInterval: RollingInterval.Day,
