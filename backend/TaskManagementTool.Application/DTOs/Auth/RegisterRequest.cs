@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TaskManagementTool.Application.DTOs.Auth;
 
-public class RegisterRequest
+public class RegisterRequest : IValidatableObject
 {
     [Required]
     [MaxLength(100)]

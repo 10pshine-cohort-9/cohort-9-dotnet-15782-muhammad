@@ -1,11 +1,12 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using TaskManagementTool.Application.DTOs.Auth;
 using TaskManagementTool.Application.Exceptions;
 using TaskManagementTool.Application.Interfaces;
@@ -58,7 +59,16 @@ public class AuthService : IAuthService
         };
 
         _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx &&
+            (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+        {
+            throw new DuplicateEmailException(request.Email);
+        }
 
         // Reload with Role included so token generation has the role name
         var savedUser = await _context.Users
@@ -86,11 +96,16 @@ public class AuthService : IAuthService
             throw new InvalidCredentialsException();
         }
 
+        if (request.Password is null || request.Password.Length < 8 || !IsPasswordStrong(request.Password)) { 
+            throw new WeakPasswordException();
+        }
+
         return GenerateAuthResponse(user);
     }
 
     private static bool IsPasswordStrong(string password)
     {
+
         var hasUppercase = Regex.IsMatch(password, "[A-Z]");
         var hasLowercase = Regex.IsMatch(password, "[a-z]");
         var hasSpecialChar = Regex.IsMatch(password, @"[^a-zA-Z0-9]");

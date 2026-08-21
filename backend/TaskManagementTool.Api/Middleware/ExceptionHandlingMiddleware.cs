@@ -11,12 +11,15 @@ public class ExceptionHandlingMiddleware
 
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
         _next = next;
         _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
         try
         {
             await _next(context);
@@ -77,6 +80,10 @@ public class ExceptionHandlingMiddleware
             DuplicateEmailException => ((int)HttpStatusCode.Conflict, exception.Message),
             WeakPasswordException => ((int)HttpStatusCode.BadRequest, exception.Message),
             InvalidCredentialsException => ((int)HttpStatusCode.Unauthorized, exception.Message),
+            TaskNotFoundException => ((int)HttpStatusCode.NotFound, exception.Message),
+            UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, exception.Message),
+            TaskAccessDeniedException => ((int)HttpStatusCode.Forbidden, exception.Message),
+            InvalidTaskReferenceException => ((int)HttpStatusCode.BadRequest, exception.Message),
             _ => ((int)HttpStatusCode.InternalServerError, "An unexpected error occurred. Please try again later.")
         };
     }
