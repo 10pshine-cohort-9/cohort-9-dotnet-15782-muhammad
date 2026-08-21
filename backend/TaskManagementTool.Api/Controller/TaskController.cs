@@ -36,10 +36,10 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<TaskResponse>>> GetAll([FromQuery] string? search)
+    public async Task<ActionResult<List<TaskResponse>>> GetAll([FromQuery] string? search, [FromQuery] int? userId)
     {
-        var (userId, role) = GetCurrentUser();
-        var result = await _taskService.GetAllAsync(userId, role, search);
+        var (currentUserId, role) = GetCurrentUser();
+        var result = await _taskService.GetAllAsync(currentUserId, role, search, userId);
         return Ok(result);
     }
 

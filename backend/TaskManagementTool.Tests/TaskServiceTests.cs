@@ -25,6 +25,7 @@ public class TaskServiceTests
 
     private const int CategoryWorkId = 1;
     private const int CategoryOtherId = 4;
+    private const int CategoryPersonalId = 2;   
 
     private static AppDbContext CreateInMemoryContext()
     {
@@ -63,14 +64,14 @@ public class TaskServiceTests
         => new(context, NullLogger<TaskService>.Instance);
 
     // Helper: inserts a task directly via context, bypassing the service, for Arrange steps.
-    private static async Task<int> SeedTaskAsync(AppDbContext context, int createdByUserId, int assignedToUserId, string title = "Seeded Task")
+    private static async Task<int> SeedTaskAsync(AppDbContext context, int createdByUserId, int assignedToUserId, string title = "Seeded Task", int categoryId = CategoryWorkId)
     {
         var task = new TaskItem
         {
             Title = title,
             StatusId = StatusToDoId,
             PriorityId = PriorityLowId,
-            CategoryId = CategoryWorkId,
+            CategoryId = categoryId,
             CreatedByUserId = createdByUserId,
             AssignedToUserId = assignedToUserId,
             CreatedAt = DateTime.UtcNow
@@ -179,6 +180,101 @@ public class TaskServiceTests
     }
 
     #endregion
+
+    #region Personal Category Restrictions
+
+[Fact]
+public async Task CreateAsync_AdminAssignsPersonalToOtherUser_ThrowsInvalidTaskReferenceException()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+    var request = new CreateTaskRequest { Title = "t", PriorityId = PriorityLowId, CategoryId = CategoryPersonalId, AssignedToUserId = UserAId };
+
+    await Assert.ThrowsAsync<InvalidTaskReferenceException>(() => service.CreateAsync(request, AdminId, AdminRole));
+}
+
+[Fact]
+public async Task CreateAsync_UserAssignsPersonalToSelf_Succeeds()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+    var request = new CreateTaskRequest { Title = "t", PriorityId = PriorityLowId, CategoryId = CategoryPersonalId, AssignedToUserId = UserAId };
+
+    var result = await service.CreateAsync(request, UserAId, UserRole);
+
+    Assert.Equal(CategoryPersonalId, context.Tasks.Single(t => t.Id == result.Id).CategoryId);
+}
+
+[Fact]
+public async Task UpdateAsync_AdminChangesCategoryToPersonalOnOtherUsersTask_ThrowsInvalidTaskReferenceException()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+    var taskId = await SeedTaskAsync(context, createdByUserId: UserAId, assignedToUserId: UserAId);
+    var request = new UpdateTaskRequest { CategoryId = CategoryPersonalId };
+
+    await Assert.ThrowsAsync<InvalidTaskReferenceException>(() => service.UpdateAsync(taskId, request, AdminId, AdminRole));
+}
+
+[Fact]
+public async Task GetByIdAsync_AdminAccessesOtherUsersPersonalTask_ThrowsTaskAccessDeniedException()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+    var taskId = await SeedTaskAsync(context, createdByUserId: UserAId, assignedToUserId: UserAId, categoryId: CategoryPersonalId);
+
+    await Assert.ThrowsAsync<TaskAccessDeniedException>(() => service.GetByIdAsync(taskId, AdminId, AdminRole));
+}
+
+[Fact]
+public async Task GetByIdAsync_AdminAccessesOwnPersonalTask_ReturnsTask()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+    var taskId = await SeedTaskAsync(context, createdByUserId: AdminId, assignedToUserId: AdminId, categoryId: CategoryPersonalId);
+
+    var result = await service.GetByIdAsync(taskId, AdminId, AdminRole);
+
+    Assert.Equal(taskId, result.Id);
+}
+
+[Fact]
+public async Task GetAllAsync_Admin_ExcludesOtherUsersPersonalTasks()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+    await SeedTaskAsync(context, createdByUserId: UserAId, assignedToUserId: UserAId, categoryId: CategoryPersonalId);
+    await SeedTaskAsync(context, createdByUserId: UserAId, assignedToUserId: UserAId, categoryId: CategoryWorkId);
+
+    var result = await service.GetAllAsync(AdminId, AdminRole);
+
+    Assert.Single(result);
+}
+
+[Fact]
+public async Task GetAllAsync_TargetUserId_Admin_ReturnsOnlyThatUsersTasks()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+    await SeedTaskAsync(context, createdByUserId: UserAId, assignedToUserId: UserAId);
+    await SeedTaskAsync(context, createdByUserId: UserBId, assignedToUserId: UserBId);
+
+    var result = await service.GetAllAsync(AdminId, AdminRole, targetUserId: UserAId);
+
+    Assert.Single(result);
+    Assert.Equal(UserAId, result[0].AssignedToUserId);
+}
+
+[Fact]
+public async Task GetAllAsync_TargetUserId_NonAdmin_ThrowsTaskAccessDeniedException()
+{
+    var context = CreateInMemoryContext();
+    var service = CreateTaskService(context);
+
+    await Assert.ThrowsAsync<TaskAccessDeniedException>(() => service.GetAllAsync(UserAId, UserRole, targetUserId: UserBId));
+}
+
+#endregion
 
     #region Not Found
 

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+ï»¿using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -10,7 +10,7 @@ using TaskManagementTool.Infrastructure.Data;
 using TaskManagementTool.Infrastructure.Logging;
 using TaskManagementTool.Infrastructure.Services;
 
-// Bootstrap logger — catches startup errors before the host is fully built
+// Bootstrap logger ï¿½ catches startup errors before the host is fully built
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
@@ -23,7 +23,7 @@ try
 
     // Replace default logging with Serilog, configured from Infrastructure
     builder.Host.UseSerilog((context, services, configuration) =>
-        SerilogConfig.ConfigureSerilog(context.Configuration, configuration)); 
+        SerilogConfig.ConfigureSerilog(context.Configuration, configuration));
 
     // Add services to the container.
     builder.Services.AddControllers();
@@ -40,6 +40,7 @@ try
 
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<ITaskService, TaskService>();
+    builder.Services.AddScoped<IDashboardService, DashboardService>();
 
     var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
     ?? throw new InvalidOperationException("Jwt configuration section is missing.");
@@ -77,10 +78,10 @@ try
 
     var app = builder.Build();
 
-    // Serilog's built-in request logging — logs every HTTP request (method, path, status, duration)
+    // Serilog's built-in request logging ï¿½ logs every HTTP request (method, path, status, duration)
     app.UseSerilogRequestLogging();
 
-    // Global exception handling — must be first so it wraps everything below it
+    // Global exception handling ï¿½ must be first so it wraps everything below it
     app.UseMiddleware<ExceptionHandlingMiddleware>();
 
     // Configure the HTTP request pipeline.

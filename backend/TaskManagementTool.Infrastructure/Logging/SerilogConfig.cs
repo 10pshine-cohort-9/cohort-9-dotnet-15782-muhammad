@@ -17,7 +17,7 @@ public static class SerilogConfig
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.Async(a => a.File(
-                path: "../Logs/log-.txt",
+                path: Path.Combine(AppContext.BaseDirectory, "..", "Logs", "log-.txt"),
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 14,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}"

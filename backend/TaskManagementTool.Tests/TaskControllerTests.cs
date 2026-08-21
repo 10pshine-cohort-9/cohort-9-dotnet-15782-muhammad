@@ -86,12 +86,12 @@ public class TaskControllerTests
         };
 
         mockTaskService
-            .Setup(s => s.GetAllAsync(TestUserId, TestUserRole, null))
+            .Setup(s => s.GetAllAsync(TestUserId, TestUserRole, null, null))
             .ReturnsAsync(expectedList);
 
         var controller = CreateController(mockTaskService);
 
-        var result = await controller.GetAll(search: null);
+        var result = await controller.GetAll(search: null, userId: null);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var response = Assert.IsType<List<TaskResponse>>(okResult.Value);
@@ -105,17 +105,17 @@ public class TaskControllerTests
         var expectedList = new List<TaskResponse> { new() { Id = 1, Title = "Quarterly report" } };
 
         mockTaskService
-            .Setup(s => s.GetAllAsync(TestUserId, TestUserRole, "report"))
+            .Setup(s => s.GetAllAsync(TestUserId, TestUserRole, "report", null))
             .ReturnsAsync(expectedList);
 
         var controller = CreateController(mockTaskService);
 
-        var result = await controller.GetAll(search: "report");
+        var result = await controller.GetAll(search: "report", userId: null);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var response = Assert.IsType<List<TaskResponse>>(okResult.Value);
         Assert.Single(response);
-        mockTaskService.Verify(s => s.GetAllAsync(TestUserId, TestUserRole, "report"), Times.Once);
+        mockTaskService.Verify(s => s.GetAllAsync(TestUserId, TestUserRole, "report", null), Times.Once);
     }
 
     [Fact]

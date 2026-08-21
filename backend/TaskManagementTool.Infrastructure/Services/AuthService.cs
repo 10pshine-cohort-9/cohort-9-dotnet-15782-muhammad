@@ -96,15 +96,15 @@ public class AuthService : IAuthService
             throw new InvalidCredentialsException();
         }
 
-        if (request.Password is null || request.Password.Length < 8 || !IsPasswordStrong(request.Password)) { 
-            throw new WeakPasswordException();
-        }
-
         return GenerateAuthResponse(user);
     }
 
     private static bool IsPasswordStrong(string password)
     {
+        if (string.IsNullOrEmpty(password) || password.Length < 8)
+        {
+            return false;
+        }
 
         var hasUppercase = Regex.IsMatch(password, "[A-Z]");
         var hasLowercase = Regex.IsMatch(password, "[a-z]");
