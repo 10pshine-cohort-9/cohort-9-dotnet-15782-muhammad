@@ -22,6 +22,9 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
             .IsRequired()
             .HasDefaultValue(false);
 
+        // Global query filter: exclude soft-deleted tasks from normal queries
+        builder.HasQueryFilter(t => !t.IsDeleted);
+
         builder.Property(t => t.CreatedAt)
             .IsRequired()
             .HasDefaultValueSql("GETUTCDATE()");
