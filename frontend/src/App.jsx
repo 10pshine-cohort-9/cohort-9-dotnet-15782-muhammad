@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
+import AppLayout from "./components/AppLayout/AppLayout";
 
 import Login from "./pages/Login/Login";
 import Signup from "./pages/Signup/Signup";
@@ -19,16 +20,20 @@ function App() {
       <Route path="/signup" element={<Signup />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tasks" element={<TaskList />} />
-        <Route path="/tasks/new" element={<TaskForm />} />
-        <Route path="/tasks/:id" element={<TaskDetail />} />
-        <Route path="/tasks/:id/edit" element={<TaskForm />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/tasks/new" element={<TaskForm />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
+          <Route path="/tasks/:id/edit" element={<TaskForm />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
       </Route>
 
       <Route element={<AdminRoute />}>
-        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route element={<AppLayout />}>
+          <Route path="/admin/users" element={<AdminUsers />} />
+        </Route>
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
