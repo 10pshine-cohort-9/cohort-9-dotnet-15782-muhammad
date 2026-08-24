@@ -28,6 +28,17 @@ try
     // Add services to the container.
     builder.Services.AddControllers();
 
+    // Add CORS policy to allow requests from the frontend (Vite dev server)
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontend", policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // Vite's default dev port
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+    });
+
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
@@ -91,6 +102,7 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseCors("AllowFrontend");
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
