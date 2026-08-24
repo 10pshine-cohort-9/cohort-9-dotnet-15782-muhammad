@@ -6,13 +6,14 @@ export default function Button({
   disabled = false,
   onClick,
   children,
+  fullWidth = false
 }) {
   return (
     <button
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`${styles.button} ${styles[variant]}`}
+      className={`${styles.button} ${styles[variant]} ${fullWidth ? styles.fullWidth : ""}`}
     >
       {children}
     </button>

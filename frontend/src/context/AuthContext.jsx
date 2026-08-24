@@ -31,13 +31,12 @@ export function AuthProvider({ children }) {
   }
 
   async function login(credentials) {
-    const { data } = await axiosInstance.post("/auth/login", credentials);
+    const data = await loginApi(credentials);
     setSession(data);
   }
 
   async function signup(details) {
-    const { data } = await axiosInstance.post("/auth/register", details);
-    setSession(data);
+    await registerApi(details);
   }
 
   function logout() {

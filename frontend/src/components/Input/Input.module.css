@@ -12,15 +12,23 @@
 
 .input {
   font-size: var(--font-size-base);
-  padding: var(--spacing-sm);
-  border: var(--border);
+  padding: 14px var(--spacing-md);
+  transition: all 0.3s ease;
+  border: 2px solid var(--color-border);
   border-radius: var(--radius);
   font-family: inherit;
+  background-color: #ffffff;
 }
 
 .input:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  transform: translateY(-2px);
+}
+
+.input:hover {
+  border-color: var(--color-primary-hover);
 }
 
 .error {

@@ -28,8 +28,12 @@ axiosInstance.interceptors.response.use(
       }
     }
 
+    const data = error.response?.data;
+    const firstValidationError = data?.errors
+      ? Object.values(data.errors)[0]?.[0]
+      : null;
     const message =
-      error.response?.data?.message || "Something went wrong. Please try again.";
+      data?.message || firstValidationError || "Something went wrong. Please try again.";
 
     return Promise.reject({ message, statusCode: error.response?.status });
   }
