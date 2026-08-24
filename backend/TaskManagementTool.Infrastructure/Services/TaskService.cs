@@ -131,7 +131,7 @@ public class TaskService : ITaskService
         }
         else
         {
-            query = query.Where(t => t.Category.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId);
+            query = query.Where(t => t.Category!.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId);
 
             if (targetUserId is not null)
             {
@@ -151,100 +151,113 @@ public class TaskService : ITaskService
         return tasks.Select(MapToResponse).ToList();
     }
 
-    public async Task<TaskResponse> UpdateAsync(int taskId, UpdateTaskRequest request, int currentUserId, string currentUserRole)
+  public async Task<TaskResponse> UpdateAsync(int taskId, UpdateTaskRequest request, int currentUserId, string currentUserRole)
+{
+    ArgumentNullException.ThrowIfNull(request);
+    var task = await GetOwnedTaskEntityAsync(taskId, currentUserId, currentUserRole);
+
+    ApplyTitleUpdate(task, request);
+    ApplyDescriptionUpdate(task, request);
+    ApplyDueDateUpdate(task, request);
+    await ApplyStatusUpdateAsync(task, request);
+    await ApplyPriorityUpdateAsync(task, request);
+    await ApplyCategoryUpdateAsync(task, request);
+    await ApplyAssignmentUpdateAsync(task, request, taskId, currentUserId, currentUserRole);
+    await ValidatePersonalCategoryAssignmentAsync(task, currentUserId, currentUserRole);
+
+    task.UpdatedAt = DateTime.UtcNow;
+    await _context.SaveChangesAsync();
+    _logger.LogInformation("Task {TaskId} updated by user {UserId}.", taskId, currentUserId);
+    return await GetByIdInternalAsync(taskId, currentUserId, currentUserRole);
+}
+
+private static void ApplyTitleUpdate(TaskItem task, UpdateTaskRequest request)
+{
+    if (request.Title is null) return;
+    if (string.IsNullOrWhiteSpace(request.Title))
     {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var task = await GetOwnedTaskEntityAsync(taskId, currentUserId, currentUserRole);
-
-        if (request.Title is not null)
-        {
-            if (string.IsNullOrWhiteSpace(request.Title))
-            {
-                throw new InvalidTaskReferenceException("Title cannot be blank.");
-            }
-            task.Title = request.Title;
-        }
-
-        if (request.Description is not null)
-        {
-            task.Description = request.Description;
-        }
-
-        if (request.DueDate is not null)
-        {
-            if (request.DueDate.Value == DateTime.MinValue)
-            {
-                throw new InvalidTaskReferenceException("DueDate is not a valid date.");
-            }
-            task.DueDate = request.DueDate;
-        }
-
-        if (request.StatusId is not null)
-        {
-            _ = await _context.Statuses.FindAsync(request.StatusId.Value)
-                ?? throw new InvalidTaskReferenceException($"StatusId '{request.StatusId}' does not exist.");
-            task.StatusId = request.StatusId.Value;
-        }
-
-        if (request.PriorityId is not null)
-        {
-            _ = await _context.Priorities.FindAsync(request.PriorityId.Value)
-                ?? throw new InvalidTaskReferenceException($"PriorityId '{request.PriorityId}' does not exist.");
-            task.PriorityId = request.PriorityId.Value;
-        }
-
-        if (request.CategoryId is not null)
-        {
-            _ = await _context.Categories.FindAsync(request.CategoryId.Value)
-                ?? throw new InvalidTaskReferenceException($"CategoryId '{request.CategoryId}' does not exist.");
-            task.CategoryId = request.CategoryId.Value;
-        }
-
-        if (request.AssignedToUserId is not null)
-        {
-            if (currentUserRole != AdminRole && request.AssignedToUserId.Value != currentUserId)
-            {
-                _logger.LogWarning(
-                    "User {UserId} attempted to reassign task {TaskId} to another user {TargetUserId}.",
-                    currentUserId, taskId, request.AssignedToUserId.Value);
-                throw new TaskAccessDeniedException();
-            }
-
-            if (currentUserRole == AdminRole && request.AssignedToUserId.Value == currentUserId)
-            {
-                _logger.LogWarning(
-                    "Admin {UserId} attempted to self-assign task {TaskId}, which is not permitted.",
-                    currentUserId, taskId);
-                throw new InvalidTaskReferenceException("Admins cannot assign tasks to themselves.");
-            }
-
-            _ = await _context.Users.FindAsync(request.AssignedToUserId.Value)
-                ?? throw new InvalidTaskReferenceException($"AssignedToUserId '{request.AssignedToUserId}' does not exist.");
-            task.AssignedToUserId = request.AssignedToUserId.Value;
-        }
-
-        if (currentUserRole == AdminRole && task.AssignedToUserId != currentUserId)
-        {
-            var categoryName = await _context.Categories
-                .Where(c => c.Id == task.CategoryId)
-                .Select(c => c.Name)
-                .FirstAsync();
-
-            if (categoryName == PersonalCategoryName)
-            {
-                throw new InvalidTaskReferenceException("Admins cannot assign 'Personal' category tasks to other users.");
-            }
-        }
-
-        task.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Task {TaskId} updated by user {UserId}.", taskId, currentUserId);
-
-        return await GetByIdInternalAsync(taskId, currentUserId, currentUserRole);
+        throw new InvalidTaskReferenceException("Title cannot be blank.");
     }
+    task.Title = request.Title;
+}
 
+private static void ApplyDescriptionUpdate(TaskItem task, UpdateTaskRequest request)
+{
+    if (request.Description is null) return;
+    task.Description = request.Description;
+}
+
+private static void ApplyDueDateUpdate(TaskItem task, UpdateTaskRequest request)
+{
+    if (request.DueDate is null) return;
+    if (request.DueDate.Value == DateTime.MinValue)
+    {
+        throw new InvalidTaskReferenceException("DueDate is not a valid date.");
+    }
+    task.DueDate = request.DueDate;
+}
+
+private async Task ApplyStatusUpdateAsync(TaskItem task, UpdateTaskRequest request)
+{
+    if (request.StatusId is null) return;
+    _ = await _context.Statuses.FindAsync(request.StatusId.Value)
+        ?? throw new InvalidTaskReferenceException($"StatusId '{request.StatusId}' does not exist.");
+    task.StatusId = request.StatusId.Value;
+}
+
+private async Task ApplyPriorityUpdateAsync(TaskItem task, UpdateTaskRequest request)
+{
+    if (request.PriorityId is null) return;
+    _ = await _context.Priorities.FindAsync(request.PriorityId.Value)
+        ?? throw new InvalidTaskReferenceException($"PriorityId '{request.PriorityId}' does not exist.");
+    task.PriorityId = request.PriorityId.Value;
+}
+
+private async Task ApplyCategoryUpdateAsync(TaskItem task, UpdateTaskRequest request)
+{
+    if (request.CategoryId is null) return;
+    _ = await _context.Categories.FindAsync(request.CategoryId.Value)
+        ?? throw new InvalidTaskReferenceException($"CategoryId '{request.CategoryId}' does not exist.");
+    task.CategoryId = request.CategoryId.Value;
+}
+
+private async Task ApplyAssignmentUpdateAsync(TaskItem task, UpdateTaskRequest request, int taskId, int currentUserId, string currentUserRole)
+{
+    if (request.AssignedToUserId is null) return;
+
+    if (currentUserRole != AdminRole && request.AssignedToUserId.Value != currentUserId)
+    {
+        _logger.LogWarning(
+            "User {UserId} attempted to reassign task {TaskId} to another user {TargetUserId}.",
+            currentUserId, taskId, request.AssignedToUserId.Value);
+        throw new TaskAccessDeniedException();
+    }
+    if (currentUserRole == AdminRole && request.AssignedToUserId.Value == currentUserId)
+    {
+        _logger.LogWarning(
+            "Admin {UserId} attempted to self-assign task {TaskId}, which is not permitted.",
+            currentUserId, taskId);
+        throw new InvalidTaskReferenceException("Admins cannot assign tasks to themselves.");
+    }
+    _ = await _context.Users.FindAsync(request.AssignedToUserId.Value)
+        ?? throw new InvalidTaskReferenceException($"AssignedToUserId '{request.AssignedToUserId}' does not exist.");
+    task.AssignedToUserId = request.AssignedToUserId.Value;
+}
+
+private async Task ValidatePersonalCategoryAssignmentAsync(TaskItem task, int currentUserId, string currentUserRole)
+{
+    if (currentUserRole != AdminRole || task.AssignedToUserId == currentUserId) return;
+
+    var categoryName = await _context.Categories
+        .Where(c => c.Id == task.CategoryId)
+        .Select(c => c.Name)
+        .FirstAsync();
+
+    if (categoryName == PersonalCategoryName)
+    {
+        throw new InvalidTaskReferenceException("Admins cannot assign 'Personal' category tasks to other users.");
+    }
+}
     public async Task DeleteAsync(int taskId, int currentUserId, string currentUserRole)
     {
         var task = await GetOwnedTaskEntityAsync(taskId, currentUserId, currentUserRole);
@@ -289,7 +302,7 @@ public class TaskService : ITaskService
             throw new TaskAccessDeniedException();
         }
 
-        if (currentUserRole == AdminRole && task.Category.Name == PersonalCategoryName && task.CreatedByUserId != currentUserId)
+        if (currentUserRole == AdminRole && task.Category!.Name == PersonalCategoryName && task.CreatedByUserId != currentUserId)
         {
             _logger.LogWarning(
                 "Admin {UserId} attempted to access another user's Personal task {TaskId}.",
@@ -307,15 +320,15 @@ public class TaskService : ITaskService
         Description = task.Description,
         DueDate = task.DueDate,
         StatusId = task.StatusId,
-        StatusName = task.Status.Name,
+        StatusName = task.Status!.Name,
         PriorityId = task.PriorityId,
-        PriorityName = task.Priority.Name,
+        PriorityName = task.Priority!.Name,
         CategoryId = task.CategoryId,
-        CategoryName = task.Category.Name,
+        CategoryName = task.Category!.Name,
         CreatedByUserId = task.CreatedByUserId,
-        CreatedByUserName = task.CreatedByUser.FullName,
+        CreatedByUserName = task.CreatedByUser!.FullName,
         AssignedToUserId = task.AssignedToUserId,
-        AssignedToUserName = task.AssignedToUser.FullName,
+        AssignedToUserName = task.AssignedToUser!.FullName,
         CreatedAt = task.CreatedAt,
         UpdatedAt = task.UpdatedAt
     };

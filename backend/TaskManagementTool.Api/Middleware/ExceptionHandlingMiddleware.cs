@@ -70,7 +70,7 @@ public class ExceptionHandlingMiddleware
         };
 
         var json = JsonSerializer.Serialize(errorResponse);
-        await context.Response.WriteAsync(json);
+        await context.Response.WriteAsync(json, context.RequestAborted);
     }
 
     private static (int StatusCode, string Message) MapException(Exception exception)

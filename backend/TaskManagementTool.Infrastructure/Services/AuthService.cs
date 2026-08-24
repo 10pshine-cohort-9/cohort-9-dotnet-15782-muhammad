@@ -106,9 +106,9 @@ public class AuthService : IAuthService
             return false;
         }
 
-        var hasUppercase = Regex.IsMatch(password, "[A-Z]");
-        var hasLowercase = Regex.IsMatch(password, "[a-z]");
-        var hasSpecialChar = Regex.IsMatch(password, @"[^a-zA-Z0-9]");
+        var hasUppercase = Regex.IsMatch(password, "[A-Z]", RegexOptions.None, TimeSpan.FromMilliseconds(100));
+        var hasLowercase = Regex.IsMatch(password, "[a-z]", RegexOptions.None, TimeSpan.FromMilliseconds(100));
+        var hasSpecialChar = Regex.IsMatch(password, @"[^a-zA-Z0-9]", RegexOptions.None, TimeSpan.FromMilliseconds(100));
 
         return hasUppercase && hasLowercase && hasSpecialChar;
     }

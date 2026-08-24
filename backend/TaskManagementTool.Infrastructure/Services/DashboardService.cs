@@ -39,13 +39,13 @@ public class DashboardService : IDashboardService
         }
         else
         {
-            query = query.Where(t => t.Category.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId);
+            query = query.Where(t => t.Category!.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId);
         }
 
         // Group by status name rather than a hardcoded StatusId - resilient to seed data reordering,
         // matching the lookup-by-Name pattern already used in TaskService for defaults.
         var counts = await query
-            .GroupBy(t => t.Status.Name)
+            .GroupBy(t => t.Status!.Name)
             .Select(g => new { StatusName = g.Key, Count = g.Count() })
             .ToListAsync();
 
@@ -83,7 +83,7 @@ public class DashboardService : IDashboardService
                 TaskCount = _context.Tasks.Count(t =>
                     t.AssignedToUserId == u.Id &&
                     !t.IsDeleted &&
-                    (t.Category.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId))
+                    (t.Category!.Name != PersonalCategoryName || t.CreatedByUserId == currentUserId))
             })
             .ToListAsync();
     }
