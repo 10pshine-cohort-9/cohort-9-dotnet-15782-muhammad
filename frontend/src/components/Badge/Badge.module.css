@@ -1,0 +1,32 @@
+.badge {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius);
+  white-space: nowrap;
+}
+
+.muted {
+  background-color: var(--color-bg-page);
+  color: var(--color-text-muted);
+}
+
+.warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.danger {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
