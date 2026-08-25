@@ -1,0 +1,73 @@
+.card {
+  background-color: var(--color-bg);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-xl);
+  max-width: 480px;
+}
+
+.metaGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: var(--border);
+}
+
+.metaGrid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.metaValue {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.errorBox {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  padding: var(--spacing-md);
+  border-radius: var(--radius);
+}
+
+.actions {
+  display: flex;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.confirmBox {
+  background-color: var(--color-bg);
+  border-radius: var(--radius);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-lg);
+  max-width: 360px;
+  width: 100%;
+}
+
+.confirmBox p {
+  margin-bottom: var(--spacing-lg);
+}
+
+.confirmActions {
+  display: flex;
+  gap: var(--spacing-md);
+}

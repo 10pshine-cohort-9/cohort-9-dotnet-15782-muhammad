@@ -1,16 +1,9 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import Button from "../Button/Button";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
-  const { user, isAdmin, logout } = useAuth();
-  const navigate = useNavigate();
-
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
+  const { user, isAdmin } = useAuth();
 
   const initials = user?.fullName
     ?.split(" ")
@@ -49,7 +42,6 @@ export default function Navbar() {
           <span className={styles.avatar}>{initials}</span>
           <span className={styles.userName}>{user?.fullName}</span>
         </NavLink>
-        <Button variant="secondary" onClick={handleLogout}>Logout</Button>
       </div>
     </nav>
   );

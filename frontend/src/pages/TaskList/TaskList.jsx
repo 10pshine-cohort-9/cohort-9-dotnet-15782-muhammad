@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, Plus } from "lucide-react";
 import { getTasks } from "../../api/taskApi";
 import { useAuth } from "../../context/AuthContext";
+import { getUserSummaries } from "../../api/dashboardApi";
 import { STATUSES, PRIORITIES, CATEGORIES } from "../../constants/lookups";
 import PageContainer from "../../components/PageContainer/PageContainer";
 import Button from "../../components/Button/Button";
@@ -13,6 +14,16 @@ import styles from "./TaskList.module.css";
 export default function TaskList() {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get("userId");
+
+  const { data: userSummaries } = useQuery({
+    queryKey: ["userSummaries"],
+    queryFn: getUserSummaries,
+    enabled: Boolean(userId) && isAdmin,
+  });
+  const viewedUser = userSummaries?.find((u) => String(u.userId) === userId);
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -26,8 +37,8 @@ export default function TaskList() {
   }, [searchInput]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["tasks", search],
-    queryFn: () => getTasks({ search: search || undefined }),
+    queryKey: ["tasks", search, userId],
+    queryFn: () => getTasks({ search: search || undefined, userId: userId || undefined }),
   });
 
   const filteredTasks = useMemo(() => {
@@ -41,8 +52,18 @@ export default function TaskList() {
   }, [data, statusFilter, priorityFilter, categoryFilter]);
 
   return (
-    <PageContainer title="Tasks">
-      <div className={styles.toolbar}>
+    <PageContainer title={userId ? `Tasks — ${viewedUser?.fullName ?? "..."}` : "Tasks"}>
+      {userId && (
+        <div className={styles.scopedHeader}>
+          <Link to="/admin/users" className={styles.backLink}>
+            ← Back to Users
+          </Link>
+          <Button onClick={() => navigate(`/tasks/new?userId=${userId}`)}>
+            <Plus size={16} /> New Task for {viewedUser?.fullName ?? "User"}
+          </Button>
+        </div>
+      )}
+        <div className={styles.toolbar}>
         <div className={styles.searchBox}>
           <Search size={18} className={styles.searchIcon} />
           <input
@@ -87,9 +108,11 @@ export default function TaskList() {
           ))}
         </select>
 
-        <Button onClick={() => navigate("/tasks/new")}>
-          <Plus size={16} /> New Task
-        </Button>
+        {!userId && (
+          <Button onClick={() => navigate("/tasks/new")}>
+            <Plus size={16} /> New Task
+          </Button>
+        )}
       </div>
 
       {isLoading && <p>Loading tasks...</p>}
