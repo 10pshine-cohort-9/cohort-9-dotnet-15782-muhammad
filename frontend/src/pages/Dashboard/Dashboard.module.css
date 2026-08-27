@@ -16,17 +16,17 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--spacing-xs);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .statCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
 }
 
 .iconChip {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius);
   display: flex;
   align-items: center;
@@ -99,7 +99,7 @@
 }
 
 .statNumber {
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 700;
   line-height: 1.2;
   color: var(--color-text);
@@ -107,7 +107,7 @@
 
 .statLabel {
   font-size: var(--font-size-base);
-  color: var(--color-text-muted);
+  color: var(--color-text);
 }
 
 .barTrack {
@@ -216,30 +216,29 @@
   background-color: var(--color-bg);
   border: var(--border);
   border-radius: var(--radius);
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-lg);
   text-decoration: none;
   color: var(--color-text);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
 }
 
 .recentItem:hover {
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+}
+
+.recentItem:hover .recentTitle {
+  color: var(--color-primary);
 }
 
 .recentTitle {
-  font-weight: 500;
+  font-weight: 540;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  transition: color 0.2 ease;
 }
 
 .recentMeta {
   display: flex;
   gap: var(--spacing-sm);
-}
-
-.badge {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  background-color: var(--color-bg-page);
-  padding: 2px var(--spacing-sm);
-  border-radius: var(--radius);
 }

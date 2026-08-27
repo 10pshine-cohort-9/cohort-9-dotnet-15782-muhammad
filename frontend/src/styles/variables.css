@@ -13,16 +13,16 @@
   --color-warning: #b45309;
   --color-warning-bg: #fffbeb;
 
-  --font-size-sm: 13px;
-  --font-size-base: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 20px;
-  --font-size-xl: 24px;
+  --font-size-sm: 15px;
+  --font-size-base: 18px;
+  --font-size-md: 20px;
+  --font-size-lg: 24px;
+  --font-size-xl: 30px;
 
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
-  --spacing-lg: 24px;
+  --spacing-lg: 28px;
   --spacing-xl: 32px;
   --spacing-xxl: 48px;
 
@@ -32,4 +32,7 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
   --border: 1px solid var(--color-border);
+  --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.08);
+  --content-max-width: 1440px;
+  --transition-fast: 150ms ease;
 }

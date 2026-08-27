@@ -28,7 +28,7 @@
 }
 
 .brand {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-primary);
   white-space: nowrap;
@@ -95,8 +95,8 @@
 }
 
 .avatar {
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background-color: var(--color-primary);
   color: #ffffff;

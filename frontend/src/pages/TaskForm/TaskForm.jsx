@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate,  useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTaskById, createTask, updateTask } from "../../api/taskApi";
 import { getUserSummaries } from "../../api/dashboardApi";
@@ -8,6 +8,7 @@ import { STATUSES, PRIORITIES, CATEGORIES } from "../../constants/lookups";
 import PageContainer from "../../components/PageContainer/PageContainer";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
+import Select from "../../components/Select/Select";
 import styles from "./TaskForm.module.css";
 
 export default function TaskForm() {
@@ -124,92 +125,124 @@ export default function TaskForm() {
 
   return (
     <PageContainer title={isEdit ? "Edit Task" : "New Task"}>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {isAdmin && !isEdit && !presetUserId && (
-          <div className={styles.field}>
-            <label className={styles.label}>Assign To</label>
-            <select
-              value={form.assignedToUserId}
-              onChange={(e) => handleChange("assignedToUserId", e.target.value)}
-              className={styles.select}
-            >
-              <option value="">Select a user...</option>
-              {userSummaries?.map((u) => (
-                <option key={u.userId} value={u.userId}>
-                  {u.fullName} ({u.email})
-                </option>
-              ))}
-            </select>
-            {fieldErrors.assignedToUserId && (
-              <span className={styles.error}>{fieldErrors.assignedToUserId}</span>
-            )}
-          </div>
-        )}
-        {isEdit && (
-          <div className={styles.field}>
-            <label className={styles.label}>Assigned To</label>
-            <div className={styles.readOnlyValue}>
-              {existingTask?.assignedToUserName}
-            </div>
-          </div>
-        )}
+      <form onSubmit={handleSubmit} className={styles.formLayout}>
+        <div className={styles.mainCard}>
+          <h2 className={styles.sectionTitle}>Task Details</h2>
 
-        <Input
-          id="title"
-          label="Title"
-          value={form.title}
-          onChange={(e) => handleChange("title", e.target.value)}
-          error={fieldErrors.title}
-        />
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="description">
-            Description
-          </label>
-          <textarea
-            id="description"
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            className={styles.textarea}
-            rows={4}
+          <Input
+            id="title"
+            label="Title"
+            value={form.title}
+            onChange={(e) => handleChange("title", e.target.value)}
+            error={fieldErrors.title}
           />
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="description">
+              Description
+            </label>
+            <textarea
+              id="description"
+              value={form.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              className={styles.textarea}
+              rows={8}
+            />
+          </div>
+
+          {submitError && (
+            <div className={styles.submitError}>{submitError}</div>
+          )}
+
+          <div className={styles.actions}>
+            <Button
+              type="submit"
+              variant="flat"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending
+                ? "Saving..."
+                : isEdit
+                ? "Save Changes"
+                : "Create Task"}
+            </Button>
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
+          </div>
         </div>
 
-        <Input
-          id="dueDate"
-          type="date"
-          label="Due Date"
-          value={form.dueDate}
-          onChange={(e) => handleChange("dueDate", e.target.value)}
-        />
+        <div className={styles.sideCard}>
+          <h2 className={styles.sectionTitle}>
+            {isAdmin && !isEdit && !presetUserId
+              ? "Scheduling & Assignment"
+              : "Scheduling"}
+          </h2>
 
-        <div className={styles.row}>
+          {isAdmin && !isEdit && !presetUserId && (
+            <div className={styles.field}>
+              <label className={styles.label}>Assign To</label>
+              <Select
+                value={form.assignedToUserId}
+                onChange={(val) => handleChange("assignedToUserId", val)}
+                options={(userSummaries ?? []).map((u) => ({
+                  value: u.userId,
+                  label: `${u.fullName} (${u.email})`,
+                }))}
+                placeholder="Select a user..."
+              />
+              {fieldErrors.assignedToUserId && (
+                <span className={styles.error}>
+                  {fieldErrors.assignedToUserId}
+                </span>
+              )}
+            </div>
+          )}
+
+          {isEdit && (
+            <div className={styles.field}>
+              <label className={styles.label}>Assigned To</label>
+              <div className={styles.readOnlyValue}>
+                {existingTask?.assignedToUserName}
+              </div>
+            </div>
+          )}
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="dueDate">Due Date</label>
+            <input
+              id="dueDate"
+              type="date"
+              value={form.dueDate}
+              onChange={(e) => handleChange("dueDate", e.target.value)}
+              className={styles.dateInput}
+            />
+          </div>
+
           <div className={styles.field}>
             <label className={styles.label}>Status</label>
-            <select
+            <Select
               value={form.statusId}
-              onChange={(e) => handleChange("statusId", e.target.value)}
-              className={styles.select}
-            >
-              <option value="">Default (To Do)</option>
-              {STATUSES.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
+              onChange={(val) => handleChange("statusId", val)}
+              options={STATUSES.map((s) => ({
+                value: s.id,
+                label: s.name,
+              }))}
+              placeholder="Default (To Do)"
+            />
           </div>
 
           <div className={styles.field}>
             <label className={styles.label}>Priority</label>
-            <select
+            <Select
               value={form.priorityId}
-              onChange={(e) => handleChange("priorityId", e.target.value)}
-              className={styles.select}
-            >
-              <option value="">Select priority...</option>
-              {PRIORITIES.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+              onChange={(val) => handleChange("priorityId", val)}
+              options={PRIORITIES.map((p) => ({
+                value: p.id,
+                label: p.name,
+              }))}
+              placeholder="Select Priority..."
+            />
             {fieldErrors.priorityId && (
               <span className={styles.error}>{fieldErrors.priorityId}</span>
             )}
@@ -217,28 +250,18 @@ export default function TaskForm() {
 
           <div className={styles.field}>
             <label className={styles.label}>Category</label>
-            <select
+            <Select
               value={form.categoryId}
-              onChange={(e) => handleChange("categoryId", e.target.value)}
-              className={styles.select}
-            >
-              <option value="">Default (Other)</option>
-              {CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+              onChange={(val) => handleChange("categoryId", val)}
+              options={CATEGORIES.filter(
+                (c) => !isAdmin || c.name !== "Personal"
+              ).map((c) => ({
+                value: c.id,
+                label: c.name,
+              }))}
+              placeholder="Select Category..."
+            />
           </div>
-        </div>
-
-        {submitError && <div className={styles.submitError}>{submitError}</div>}
-
-        <div className={styles.actions}>
-          <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? "Saving..." : isEdit ? "Save Changes" : "Create Task"}
-          </Button>
-          <Button variant="secondary" onClick={() => navigate(-1)}>
-            Cancel
-          </Button>
         </div>
       </form>
     </PageContainer>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { getTaskById, deleteTask } from "../../api/taskApi";
@@ -12,6 +12,9 @@ import styles from "./TaskDetail.module.css";
 export default function TaskDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get("userId");
+   const backTo = userId ? `/tasks?userId=${userId}` : "/tasks";
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [showConfirm, setShowConfirm] = useState(false);
@@ -25,7 +28,7 @@ export default function TaskDetail() {
     mutationFn: () => deleteTask(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      navigate("/tasks");
+      navigate(backTo);
     },
   });
 
@@ -41,7 +44,7 @@ export default function TaskDetail() {
     return (
       <PageContainer title="Task Detail">
         <div className={styles.errorBox}>{error.message}</div>
-        <Button variant="secondary" onClick={() => navigate("/tasks")}>
+        <Button variant="secondary" onClick={() => navigate(backTo)}>
           Back to Tasks
         </Button>
       </PageContainer>
@@ -91,13 +94,13 @@ export default function TaskDetail() {
         </div>
 
         <div className={styles.actions}>
-          <Button onClick={() => navigate(`/tasks/${id}/edit`)}>Edit</Button>
+          <Button variant="flat" onClick={() => navigate(`/tasks/${id}/edit`)}>Edit</Button>
           {canDelete && (
             <Button variant="danger" onClick={() => setShowConfirm(true)}>
               Delete
             </Button>
           )}
-          <Button variant="secondary" onClick={() => navigate("/tasks")}>
+          <Button variant="secondary" onClick={() => navigate(backTo)}>
             Back
           </Button>
         </div>

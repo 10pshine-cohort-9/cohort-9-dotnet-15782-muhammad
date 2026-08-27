@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, X } from "lucide-react";
 import { getTasks } from "../../api/taskApi";
 import { useAuth } from "../../context/AuthContext";
 import { getUserSummaries } from "../../api/dashboardApi";
@@ -9,12 +9,12 @@ import { STATUSES, PRIORITIES, CATEGORIES } from "../../constants/lookups";
 import PageContainer from "../../components/PageContainer/PageContainer";
 import Button from "../../components/Button/Button";
 import Badge from "../../components/Badge/Badge";
+import Select from "../../components/Select/Select";
 import styles from "./TaskList.module.css";
 
 export default function TaskList() {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
-
   const [searchParams] = useSearchParams();
   const userId = searchParams.get("userId");
 
@@ -38,7 +38,11 @@ export default function TaskList() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["tasks", search, userId],
-    queryFn: () => getTasks({ search: search || undefined, userId: userId || undefined }),
+    queryFn: () =>
+      getTasks({
+        search: search || undefined,
+        userId: userId || undefined,
+      }),
   });
 
   const filteredTasks = useMemo(() => {
@@ -52,18 +56,24 @@ export default function TaskList() {
   }, [data, statusFilter, priorityFilter, categoryFilter]);
 
   return (
-    <PageContainer title={userId ? `Tasks — ${viewedUser?.fullName ?? "..."}` : "Tasks"}>
+    <PageContainer
+      title={userId ? `Tasks — ${viewedUser?.fullName ?? "..."}` : "Tasks"}
+    >
       {userId && (
         <div className={styles.scopedHeader}>
           <Link to="/admin/users" className={styles.backLink}>
             ← Back to Users
           </Link>
-          <Button onClick={() => navigate(`/tasks/new?userId=${userId}`)}>
+          <Button
+            variant="flat"
+            onClick={() => navigate(`/tasks/new?userId=${userId}`)}
+          >
             <Plus size={16} /> New Task for {viewedUser?.fullName ?? "User"}
           </Button>
         </div>
       )}
-        <div className={styles.toolbar}>
+
+      <div className={styles.toolbar}>
         <div className={styles.searchBox}>
           <Search size={18} className={styles.searchIcon} />
           <input
@@ -75,41 +85,45 @@ export default function TaskList() {
           />
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className={styles.select}
-        >
-          <option value="">All Statuses</option>
-          {STATUSES.map((s) => (
-            <option key={s.id} value={s.name}>{s.name}</option>
-          ))}
-        </select>
+        <div className={styles.filterGroup}>
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={STATUSES.map((s) => ({ value: s.name, label: s.name }))}
+            placeholder="All Statuses"
+          />
+          <Select
+            value={priorityFilter}
+            onChange={setPriorityFilter}
+            options={PRIORITIES.map((p) => ({ value: p.name, label: p.name }))}
+            placeholder="All Priorities"
+          />
+          <Select
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            options={CATEGORIES.map((c) => ({ value: c.name, label: c.name }))}
+            placeholder="All Categories"
+          />
+        </div>
 
-        <select
-          value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value)}
-          className={styles.select}
-        >
-          <option value="">All Priorities</option>
-          {PRIORITIES.map((p) => (
-            <option key={p.id} value={p.name}>{p.name}</option>
-          ))}
-        </select>
-
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className={styles.select}
-        >
-          <option value="">All Categories</option>
-          {CATEGORIES.map((c) => (
-            <option key={c.id} value={c.name}>{c.name}</option>
-          ))}
-        </select>
+        {(search || statusFilter || priorityFilter || categoryFilter) && (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setSearchInput("");
+              setSearch("");
+              setStatusFilter("");
+              setPriorityFilter("");
+              setCategoryFilter("");
+            }}
+            className={styles.clearFilters}
+          >
+            <X size={16} /> Clear
+          </Button>
+        )}
 
         {!userId && (
-          <Button onClick={() => navigate("/tasks/new")}>
+          <Button variant="flat" onClick={() => navigate("/tasks/new")}>
             <Plus size={16} /> New Task
           </Button>
         )}
@@ -125,11 +139,17 @@ export default function TaskList() {
       {filteredTasks.length > 0 && (
         <div className={styles.list}>
           {filteredTasks.map((task) => (
-            <Link key={task.id} to={`/tasks/${task.id}`} className={styles.row}>
+            <Link
+              key={task.id}
+              to={`/tasks/${task.id}${userId ? `?userId=${userId}` : ""}`}
+              className={styles.row}
+            >
               <div className={styles.rowMain}>
                 <span className={styles.title}>{task.title}</span>
                 {isAdmin && (
-                  <span className={styles.assignee}>{task.assignedToUserName}</span>
+                  <span className={styles.assignee}>
+                    {task.assignedToUserName}
+                  </span>
                 )}
               </div>
               <div className={styles.rowBadges}>

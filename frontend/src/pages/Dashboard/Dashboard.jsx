@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ListTodo, Clock, Loader, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getDashboard } from "../../api/dashboardApi";
+import Badge from "../../components/Badge/Badge";
 import PageContainer from "../../components/PageContainer/PageContainer";
 import Button from "../../components/Button/Button";
 import styles from "./Dashboard.module.css";
@@ -51,7 +52,7 @@ export default function Dashboard() {
           <div className={styles.statsGrid}>
             <div className={`${styles.statCard} ${styles.total}`}>
               <span className={styles.iconChip}>
-                <ListTodo size={20} className={styles.icon} />
+                <ListTodo size={23} className={styles.icon} />
               </span>
               <span className={styles.statNumber}>{data.totalTasks}</span>
               <span className={styles.statLabel}>Total Tasks</span>
@@ -61,7 +62,7 @@ export default function Dashboard() {
             </div>
             <div className={`${styles.statCard} ${styles.todo}`}>
               <span className={styles.iconChip}>
-                <Clock size={20} className={styles.icon} />
+                <Clock size={23} className={styles.icon} />
               </span>
               <span className={styles.statNumber}>{data.toDoCount}</span>
               <span className={styles.statLabel}>To Do</span>
@@ -71,7 +72,7 @@ export default function Dashboard() {
             </div>
             <div className={`${styles.statCard} ${styles.inProgress}`}>
               <span className={styles.iconChip}>
-                <Loader size={20} className={styles.icon} />
+                <Loader size={23} className={styles.icon} />
               </span>
               <span className={styles.statNumber}>{data.inProgressCount}</span>
               <span className={styles.statLabel}>In Progress</span>
@@ -81,7 +82,7 @@ export default function Dashboard() {
             </div>
             <div className={`${styles.statCard} ${styles.completed}`}>
               <span className={styles.iconChip}>
-                <CheckCircle2 size={20} className={styles.icon} />
+                <CheckCircle2 size={23} className={styles.icon} />
               </span>
               <span className={styles.statNumber}>{data.completedCount}</span>
               <span className={styles.statLabel}>Completed</span>
@@ -94,21 +95,21 @@ export default function Dashboard() {
           <div className={styles.actions}>
             {isAdmin ? (
               <>
-                <Button onClick={() => navigate("/admin/users")}>Manage Users</Button>
+                <Button variant="flat" onClick={() => navigate("/admin/users")}>Manage Users</Button>
                 <Button variant="secondary" onClick={() => navigate("/tasks")}>
                   View All Tasks
                 </Button>
               </>
             ) : (
               <>
-                <Button onClick={() => navigate("/tasks/new")}>New Task</Button>
+                <Button variant="flat" onClick={() => navigate("/tasks/new")}>New Task</Button>
                 <Button variant="secondary" onClick={() => navigate("/tasks")}>
                   View All Tasks
                 </Button>
               </>
             )}
           </div>
-                    <div className={styles.recentSection}>
+            <div className={styles.recentSection}>
             <h2 className={styles.sectionTitle}>Recent Tasks</h2>
             {recentTasks.length === 0 ? (
               <p className={styles.emptyText}>No tasks yet.</p>
@@ -127,8 +128,9 @@ export default function Dashboard() {
                       )}
                     </span>
                       <span className={styles.recentMeta}>
-                      <span className={styles.badge}>{task.statusName}</span>
-                      <span className={styles.badge}>{task.priorityName}</span>
+                          <Badge text={task.statusName} />
+                          <Badge text={task.priorityName} />
+                          <Badge text={task.categoryName} />
                     </span>
                   </Link>
                 ))}

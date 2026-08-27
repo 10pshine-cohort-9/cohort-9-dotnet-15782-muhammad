@@ -4,6 +4,7 @@ export default function Button({
   variant = "primary",
   type = "button",
   disabled = false,
+  className = "",
   onClick,
   children,
   fullWidth = false
@@ -13,7 +14,7 @@ export default function Button({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`${styles.button} ${styles[variant]} ${fullWidth ? styles.fullWidth : ""}`}
+      className={`${styles.button} ${styles[variant]} ${fullWidth ? styles.fullWidth : ""} ${className}`}
     >
       {children}
     </button>

@@ -68,3 +68,19 @@
 .fullWidth {
   width: 100%;
 }
+
+.flat {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.flat:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  transform: none;
+  box-shadow: none;
+}
+
+.flat:active:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}

@@ -7,6 +7,12 @@ const COLOR_MAP = {
   "Low": "muted",
   "Medium": "warning",
   "High": "danger",
+  "Admin": "purple",
+  "User": "success",
+  "Work": "purple",
+  "Personal": "success",
+  "Urgent": "danger",
+  "Other": "muted",
 };
 
 export default function Badge({ text }) {
