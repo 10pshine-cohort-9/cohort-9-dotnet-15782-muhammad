@@ -15,7 +15,12 @@ const queryClient = new QueryClient({
   },
 })
 
-createRoot(document.getElementById('root')).render(
+const rootElement = document.getElementById('root')
+if (!rootElement) {
+  throw new Error('Root element with id "root" not found in the document.')
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

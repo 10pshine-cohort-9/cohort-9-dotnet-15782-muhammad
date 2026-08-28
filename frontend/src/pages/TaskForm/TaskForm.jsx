@@ -123,6 +123,14 @@ export default function TaskForm() {
     );
   }
 
+  if (isEdit && !isLoadingTask && !existingTask) {
+  return (
+    <PageContainer title="Edit Task">
+      <div className={styles.submitError}>Task not found.</div>
+    </PageContainer>
+  );
+}
+
   return (
     <PageContainer title={isEdit ? "Edit Task" : "New Task"}>
       <form onSubmit={handleSubmit} className={styles.formLayout}>

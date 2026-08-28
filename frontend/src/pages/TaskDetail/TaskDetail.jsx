@@ -50,6 +50,16 @@ export default function TaskDetail() {
       </PageContainer>
     );
   }
+  if (!task) {
+  return (
+    <PageContainer title="Task Detail">
+      <div className={styles.errorBox}>Task not found.</div>
+      <Button variant="secondary" onClick={() => navigate(backTo)}>
+        Back to Tasks
+      </Button>
+    </PageContainer>
+  );
+}
 
   const canDelete = !isAdmin;
 

@@ -39,6 +39,14 @@ export default function Profile() {
     );
   }
 
+  if (!me) {
+  return (
+    <PageContainer title="Profile">
+      <div className={styles.errorBox}>Unable to load profile.</div>
+    </PageContainer>
+  );
+}
+
    const initials = user?.fullName
     ?.split(" ")
     .map((n) => n[0])

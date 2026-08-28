@@ -70,15 +70,24 @@
   z-index: 20;
 }
 
+.optionItem {
+  list-style: none;
+}
+
 .option {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  background: none;
   border-radius: var(--radius);
   font-size: var(--font-size-base);
+  font-family: inherit;
   color: var(--color-text);
   cursor: pointer;
+  text-align: left;
   transition: background-color var(--transition-fast);
 }
 

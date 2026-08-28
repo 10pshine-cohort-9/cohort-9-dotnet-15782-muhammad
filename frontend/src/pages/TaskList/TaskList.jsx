@@ -133,9 +133,14 @@ export default function TaskList() {
       {isError && <p className={styles.error}>Failed to load tasks.</p>}
 
       {data && filteredTasks.length === 0 && (
-        <p className={styles.emptyText}>No tasks match your filters.</p>
+        <p className={styles.emptyText}>
+          {data.length === 0
+            ? userId
+              ? `${viewedUser?.fullName ?? "This user"} has no tasks yet.`
+              : "No tasks yet."
+            : "No tasks match your filters."}
+        </p>
       )}
-
       {filteredTasks.length > 0 && (
         <div className={styles.list}>
           {filteredTasks.map((task) => (

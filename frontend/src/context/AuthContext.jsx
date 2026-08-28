@@ -1,6 +1,8 @@
 import { createContext, useContext, useState } from "react";
 import { login as loginApi, register as registerApi } from "../api/authApi";
 import { getUserIdFromToken } from "../utils/jwt";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 const AuthContext = createContext(null);
 
@@ -19,8 +21,14 @@ function loadUserFromStorage() {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(loadUserFromStorage);
+  const queryClient = useQueryClient();
+
+
 
   function setSession(authResponse) {
+    if(!authResponse?.token) {
+      throw new Error("Invalid authentication response: missing token.");
+    }
     const { token, email, fullName, role } = authResponse;
     const userId = getUserIdFromToken(token);
     const userData = { userId, email, fullName, role };
@@ -43,6 +51,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
+    queryClient.clear();
   }
 
   const value = {
