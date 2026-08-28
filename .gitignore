@@ -16,13 +16,6 @@ x86/
 *.sln.docstates
 *.dbmdl
 
-## Node / React (frontend) ##
-node_modules/
-dist/
-build/
-.env
-.env.local
-
 ## Logs ##
 *.log
 Logs/
