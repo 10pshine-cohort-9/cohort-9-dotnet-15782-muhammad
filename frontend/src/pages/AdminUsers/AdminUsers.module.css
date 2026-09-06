@@ -1,0 +1,91 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-bg);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.row:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.row:hover .name {
+  color: var(--color-primary);
+}
+
+.rowLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  flex-shrink: 0;
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowRight {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.chevron {
+  color: var(--color-text-muted);
+}
+
+.name {
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
+
+.email {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.taskCount {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+  background-color: rgba(37, 99, 235, 0.1);
+  padding: 4px var(--spacing-md);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.emptyText {
+  color: var(--color-text-muted);
+}

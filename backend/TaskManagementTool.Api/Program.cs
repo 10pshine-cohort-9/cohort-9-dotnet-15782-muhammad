@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TaskManagementTool.Api.Middleware;
@@ -27,6 +28,17 @@ try
 
     // Add services to the container.
     builder.Services.AddControllers();
+
+    // Add CORS policy to allow requests from the frontend (Vite dev server)
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowFrontend", policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // Vite's default dev port
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+    });
 
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
@@ -78,6 +90,12 @@ try
 
     var app = builder.Build();
 
+    if (app.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+    }
+
     // Serilog's built-in request logging � logs every HTTP request (method, path, status, duration)
     app.UseSerilogRequestLogging();
 
@@ -91,11 +109,12 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseCors("AllowFrontend");
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
 
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -104,5 +123,6 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    
+    await Log.CloseAndFlushAsync(); 
 }
